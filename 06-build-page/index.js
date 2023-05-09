@@ -47,20 +47,16 @@ dirEntries.then((values)=>{
   }
 })
 async function createIndex() {
-  try {
-    const stream = fs.createWriteStream(path.resolve(path.join(__dirname, 'project-dist'), 'index.html'));
-    let template = await fs.promises.readFile(path.resolve(__dirname, 'template.html'), 'utf-8');
-    const tags = template.match(/{{.+}}/g);
-    for (let tag of tags) {
-      const file = tag.match(/(?<={{).+?(?=}})/g).toString() + '.html';
-      await fs.promises.readFile(path.join(path.join(__dirname, 'components'), file), 'utf-8').then(data => {
-        template = template.replace(tag, data);
-      });
-    }
-    stream.write(template);
-  } catch (err) {
-    console.log(err.message);
+  const stream = fs.createWriteStream(path.resolve(path.join(__dirname, 'project-dist'), 'index.html'));
+  let template = await fs.promises.readFile(path.resolve(__dirname, 'template.html'), 'utf-8');
+  const tags = template.match(/{{(.*?)}}/g);
+  for (let tag of tags) {
+    let file = tag.replace(/[^a-zA-Z]+/g, '') + '.html';
+    await fs.promises.readFile(path.join(path.join(__dirname, 'components'), file), 'utf-8').then(data => {
+      template = template.replace(tag, data);
+    });
   }
+  stream.write(template);
 }
 createIndex();
 function unlinkDir(src) {
